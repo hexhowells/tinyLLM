@@ -147,7 +147,6 @@ class GPT(nn.Module):
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
         elif isinstance(module, nn.RMSNorm):
-            torch.nn.init.zeros_(module.bias)
             torch.nn.init.ones_(module.weight)
     
 
