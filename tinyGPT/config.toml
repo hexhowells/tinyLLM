@@ -1,0 +1,50 @@
+model_type = 'gpt2'
+n_layer = 12
+n_head = 12
+n_embd =  768
+
+# these options must be filled in externally
+vocab_size = 50257
+context_size = 1024
+
+# dropout hyperparameters
+embd_pdrop = 0.1
+resid_pdrop = 0.1
+attn_pdrop = 0.1
+
+[models]
+openai-gpt = {n_layer=12, n_head=12, n_embd=768}  # 117M params
+# GPT-2 configs
+gpt = {n_layer=12, n_head=12, n_embd=768}  # 124M params
+gpt2-medium = {n_layer=24, n_head=16, n_embd=1024} # 350M params
+gpt2-large = {n_layer=36, n_head=20, n_embd=1280} # 774M params
+gpt2-xl = {n_layer=48, n_head=25, n_embd=1600} # 1558M params
+# Gophers
+gopher-44m = {n_layer=8, n_head=16, n_embd=512}
+# tiny models
+gpt-mini = {n_layer=6, n_head=6, n_embd=192}
+gpt-micro = {n_layer=4, n_head=4, n_embd=128}
+gpt-nano = {n_layer=3, n_head=3, n_embd=48}
+
+[data]
+block_size = 128
+
+[trainer]
+device = "auto"          # "auto", "cuda", or "cpu"
+batch_size = 16
+accumulation_steps = 32  # 512 / batch_size
+num_workers = 0
+learning_rate = 5e-4
+weight_decay = 0.1
+betas = [0.9, 0.95]
+grad_norm_clip = 1.0
+max_iters = 50_000
+
+[sft]
+learning_rate = 2e-5
+warmup_steps = 200
+epochs = 2
+
+[system]
+work_dir = "./out"
+data_dir = "/media/datasets/fineweb_10BT"
