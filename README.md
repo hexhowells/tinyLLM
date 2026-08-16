@@ -1,5 +1,5 @@
 # tinyLLM
-tinyLLM is a continuation of the tinyGPT project but with more modern architectural changes.
+tinyLLM is a continuation of the [tinyGPT](https://github.com/hexhowells/tinyGPT) project but with more modern architectural changes.
 
 tinyGPT was an implementation of GPT 2 (124M) with some small improvements. For this project, the following improvements are planned:
 - RoPE embedding
