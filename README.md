@@ -4,7 +4,7 @@ tinyLLM is a continuation of the [tinyGPT](https://github.com/hexhowells/tinyGPT
 tinyGPT was an implementation of GPT 2 (124M) with some small improvements. For this project, the following improvements are planned:
 - [ ] RoPE embedding
 - [x] RMSNorm
-- [ ] Fineweb-edu (instead of Fineweb)
+- [x] Fineweb-edu (instead of Fineweb)
 - [x] No weight sharing between the token embedding and final linear layer
 - [ ] Pre-tokenise the training data for faster data loading
 - [ ] Use a more modern tokeniser
