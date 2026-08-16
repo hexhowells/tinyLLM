@@ -8,8 +8,8 @@ from transformers import AutoTokenizer
 
 import wandb
 
-from tinyGPT.model import GPT
-from tinyGPT.utils import set_seed, load_config
+from tinyLLM.model import GPT
+from tinyLLM.utils import set_seed, load_config
 from dataloader import SmolTalkDataset, sft_collate_fn
 
 import math

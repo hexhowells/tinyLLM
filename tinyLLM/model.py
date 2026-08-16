@@ -6,7 +6,7 @@ from transformers.models.gpt2 import GPT2LMHeadModel
 
 import math
 
-from tinyGPT.utils import load_config
+from tinyLLM.utils import load_config
 
 
 class CausalSelfAttention(nn.Module):
