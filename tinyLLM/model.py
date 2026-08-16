@@ -71,9 +71,9 @@ class Block(nn.Module):
     """single transformer block"""
     def __init__(self, config: dict):
         super().__init__()
-        self.ln_1 = nn.LayerNorm(config['n_embd'])
+        self.ln_1 = nn.RMSNorm(config['n_embd'])
         self.attn = CausalSelfAttention(config)
-        self.ln_2 = nn.LayerNorm(config['n_embd'])
+        self.ln_2 = nn.RMSNorm(config['n_embd'])
         self.mlp = MLP(config)
 
 
@@ -89,7 +89,7 @@ class GPT(nn.Module):
     General pipeline
     emb = dropout(token_emb + pos_emb)
     emb = block(emb) for block in blocks
-    out = linear(layerNorm(emb))
+    out = linear(RNSNorm(emb))
 
     where block:
         -> layer norm -> multi-head attention -> + -> layer norm -> MLP -> + -> output
@@ -120,7 +120,7 @@ class GPT(nn.Module):
             wpe = nn.Embedding(config['context_size'], config['n_embd']),  # weight position embedding
             drop = nn.Dropout(config['embd_pdrop']),
             h = nn.ModuleList([Block(config) for _ in range(config['n_layer'])]),  # hidden layers
-            ln_f = nn.LayerNorm(config['n_embd']),
+            ln_f = nn.RMSNorm(config['n_embd']),
         ))
         self.lm_head = nn.Linear(config['n_embd'], config['vocab_size'], bias=False)
 
@@ -146,7 +146,7 @@ class GPT(nn.Module):
                 torch.nn.init.zeros_(module.bias)
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
-        elif isinstance(module, nn.LayerNorm):
+        elif isinstance(module, nn.RMSNorm):
             torch.nn.init.zeros_(module.bias)
             torch.nn.init.ones_(module.weight)
     
@@ -229,14 +229,14 @@ class GPT(nn.Module):
         """
         This long function is unfortunately doing something very simple and is being very defensive:
         We are separating out all parameters of the model into two buckets: those that will experience
-        weight decay for regularization and those that won't (biases, and layernorm/embedding weights).
+        weight decay for regularization and those that won't (biases, and RMSnorm/embedding weights).
         We are then returning the PyTorch optimizer object.
         """
         # separate out all parameters to those that will and won't experience regularizing weight decay
         decay = set()
         no_decay = set()
         whitelist_weight_modules = (torch.nn.Linear, )
-        blacklist_weight_modules = (torch.nn.LayerNorm, torch.nn.Embedding)
+        blacklist_weight_modules = (torch.nn.RMSNorm, torch.nn.Embedding)
         
         for module_name, m in self.named_modules():
             for param_name, _ in m.named_parameters():
