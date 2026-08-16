@@ -9,6 +9,17 @@ import math
 from tinyLLM.utils import load_config
 
 
+class ReLUSquared(nn.Module):
+    def __init__(self, inplace: bool = False):
+        super().__init__()
+        self.inplace = inplace
+
+
+    def forward(self, x):
+        x = F.relu(x, inplace=self.inplace)
+        return x.square_() if self.inplace else x.square()
+
+
 class CausalSelfAttention(nn.Module):
     def __init__(self, config: dict):
         super().__init__()
@@ -55,7 +66,7 @@ class MLP(nn.Module):
     def __init__(self, config: dict):
         super().__init__()
         self.c_fc = nn.Linear(config['n_embd'], 4 * config['n_embd'])
-        self.gelu = nn.GELU()
+        self.gelu = ReLUSquared()
         self.c_proj = nn.Linear(4 * config['n_embd'], config['n_embd'])
         self.dropout = nn.Dropout(config['resid_pdrop'])
 
