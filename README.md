@@ -7,7 +7,7 @@ tinyGPT was an implementation of GPT 2 (124M) with some small improvements. For 
 - [x] Fineweb-edu (instead of Fineweb)
 - [x] No weight sharing between the token embedding and final linear layer
 - [x] Pre-tokenise the training data for faster data loading
-- [ ] Use a more modern tokeniser
+- [x] Use a more modern tokeniser
 - [ ] QK normalisation
 - [ ] Muon optimiser
 - [x] ReLU² or --SwiGLU--
