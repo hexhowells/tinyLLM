@@ -10,6 +10,6 @@ tinyGPT was an implementation of GPT 2 (124M) with some small improvements. For 
 - [x] Use a more modern tokeniser
 - [ ] QK normalisation
 - [ ] Muon optimiser
-- [x] ReLU² or --SwiGLU--
+- [x] ReLU² or SwiGLU
 - [ ] Larger model with more data (pre-training and fine-tuning)
 - [ ] Additional fine-tuning for increasing the context size
