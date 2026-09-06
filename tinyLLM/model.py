@@ -7,6 +7,7 @@ from transformers.models.gpt2 import GPT2LMHeadModel
 import math
 
 from tinyLLM.utils import load_config
+from tinyLLM.rope import RoPECache, apply_rotary_pos_emb
 
 
 class ReLUSquared(nn.Module):
@@ -36,7 +37,7 @@ class CausalSelfAttention(nn.Module):
         self.n_embd = config['n_embd']
 
 
-    def forward(self, x):
+    def forward(self, x, cos, sin):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
 
         # multiply raw x (shape C) by a linear layer to get Q, K, V (shape C each)
@@ -46,6 +47,9 @@ class CausalSelfAttention(nn.Module):
         k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, n_head, T, head_dim)
         q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, n_head, T, head_dim)
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, n_head, T, head_dim)
+
+        # apply RoPE to Q and K
+        q, k = apply_rotary_pos_emb(q, k, cos, sin)
 
         # causal self-attention; Self-attend: (B, n_head, T, head_dim) x (B, n_head, head_dim, T) -> (B, n_head, T, T)
         y = F.scaled_dot_product_attention(
@@ -88,9 +92,9 @@ class Block(nn.Module):
         self.mlp = MLP(config)
 
 
-    def forward(self, x):
-        x = x + self.attn(self.ln_1(x))
-        x = x + self.mlp(self.ln_2(x))
+    def forward(self, x, cos, sin):
+        x = x + self.attn(self.ln_1(x), cos, sin)
+        x = x + self.mlp(self.ln_2(x), cos, sin)
         
         return x
 
@@ -128,12 +132,14 @@ class GPT(nn.Module):
 
         self.transformer: nn.ModuleDict = nn.ModuleDict(dict(
             wte = nn.Embedding(config['vocab_size'], config['n_embd']),  # weight token embedding
-            wpe = nn.Embedding(config['context_size'], config['n_embd']),  # weight position embedding
             drop = nn.Dropout(config['embd_pdrop']),
             h = nn.ModuleList([Block(config) for _ in range(config['n_layer'])]),  # hidden layers
             ln_f = nn.RMSNorm(config['n_embd']),
         ))
         self.lm_head = nn.Linear(config['n_embd'], config['vocab_size'], bias=False)
+
+        head_dim = config['n_embd'] // config['n_head']
+        self.rope_cache = RoPECache(head_dim=head_dim, max_seq_len=self.context_size)
 
         # init all weights, and apply a special scaled init to the residual projections, per GPT-2 paper
         self.apply(self._init_weights)
@@ -162,17 +168,14 @@ class GPT(nn.Module):
         device = idx.device
         _, t = idx.size()
         assert t <= self.context_size, f"Cannot forward sequence of length {t}, block size is only {self.context_size}"
-        
-        # pos is an array of integers as torch.nn.Embedding performs a direct array lookup 
-        # instead of computing the entire linear forward pass
-        pos = torch.arange(0, t, dtype=torch.long, device=device).unsqueeze(0)  # pos = [[0, 1, 2, 3, 4, ..., t]]
 
         tok_emb = self.transformer.wte(idx)  # type: ignore
-        pos_emb = self.transformer.wpe(pos)  # type: ignore
-        x = self.transformer.drop(tok_emb + pos_emb)  # type: ignore
+        x = self.transformer.drop(tok_emb)  # type: ignore
+
+        cos, sin = self.rope_cache(seq_len=t, dtype=tok_emb.dtype)
         
         for block in self.transformer.h:  # type: ignore
-            x = block(x)
+            x = block(x, cos, sin)
         
         x = self.transformer.ln_f(x)  # type: ignore
         logits = self.lm_head(x)
