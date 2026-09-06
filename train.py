@@ -29,7 +29,7 @@ else:
 print(f'Running on device {device}')
 
 wandb.init(
-    project="tinygpt",
+    project="tinyllm",
     config=config,
 )
 
