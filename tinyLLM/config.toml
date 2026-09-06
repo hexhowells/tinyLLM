@@ -8,9 +8,9 @@ vocab_size = 49_152
 context_size = 2048
 
 # dropout hyperparameters
-embd_pdrop = 0.1
-resid_pdrop = 0.1
-attn_pdrop = 0.1
+embd_pdrop = 0.0  # 0.1
+resid_pdrop = 0.0  # 0.1
+attn_pdrop = 0.0  # 0.1
 
 [models]
 tiny-llm-nano = {n_layer=3, n_head=3, n_embd=48}  # 2.5M params
