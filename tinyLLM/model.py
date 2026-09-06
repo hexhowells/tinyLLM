@@ -251,9 +251,6 @@ class GPT(nn.Module):
         for module_name, m in self.named_modules():
             for param_name, _ in m.named_parameters():
                 full_param_name = '%s.%s' % (module_name, param_name) if module_name else param_name # full param name
-                # random note: because named_modules and named_parameters are recursive
-                # we will see the same tensors p many many times. but doing it this way
-                # allows us to know which parent module any tensor p belongs to...
                 if param_name.endswith('bias'):
                     no_decay.add(full_param_name)
                 elif param_name.endswith('weight') and isinstance(m, whitelist_weight_modules):
@@ -263,9 +260,6 @@ class GPT(nn.Module):
 
         # validate that we considered every parameter
         param_dict = {pn: p for pn, p in self.named_parameters()}
-
-        decay.discard('lm_head.weight')
-        no_decay.discard('lm_head.weight')
         
         inter_params = decay & no_decay
         union_params = decay | no_decay
