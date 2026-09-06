@@ -3,8 +3,7 @@ n_layer = 12
 n_head = 12
 n_embd =  768
 
-# these options must be filled in externally
-vocab_size = 49_152
+vocab_size = 0  # filled in dynamically based on tokeniser
 context_size = 2048
 
 # dropout hyperparameters
