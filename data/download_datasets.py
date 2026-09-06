@@ -10,7 +10,7 @@ DATASETS = {
     },
     "fineweb-edu": {
         "repo_id": "HuggingFaceFW/fineweb-edu",
-        "allow_patterns": "sample/10BT/*",
+        "allow_patterns": "sample/10BT/*",  # sample/100BT/ - sample/350BT/
     },
     "smoltalk": {
         "repo_id": "HuggingFaceTB/smoltalk",
