@@ -38,5 +38,6 @@ warmup_steps = 200
 epochs = 2
 
 [system]
+checkpoints = "checkpoints/"
 work_dir = "./out"
 data_dir = "/media/datasets/fineweb_10BT"

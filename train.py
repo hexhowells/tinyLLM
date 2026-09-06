@@ -13,6 +13,7 @@ from tinyLLM.utils import set_seed, load_config
 from dataloader import FineWebDataset
 
 import math
+import os
 
 
 # load config
@@ -33,6 +34,7 @@ wandb.init(
     config=config,
 )
 
+os.makedirs(config['system']['checkpoints'], exist_ok=True)
 
 # learning rate scheduler
 learning_rate = config['trainer']['learning_rate']
