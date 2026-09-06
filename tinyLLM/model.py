@@ -94,7 +94,7 @@ class Block(nn.Module):
 
     def forward(self, x, cos, sin):
         x = x + self.attn(self.ln_1(x), cos, sin)
-        x = x + self.mlp(self.ln_2(x), cos, sin)
+        x = x + self.mlp(self.ln_2(x))
         
         return x
 
