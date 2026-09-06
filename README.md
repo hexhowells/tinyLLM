@@ -14,3 +14,4 @@ tinyGPT was an implementation of GPT 2 (124M) with some small improvements. For 
 - [ ] Larger model with more data (pre-training and fine-tuning)
 - [ ] Additional fine-tuning for increasing the context size
 - [x] Remove dropout layers for pre-training
+- [ ] Implement gated linear units (GLU)
