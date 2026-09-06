@@ -21,9 +21,6 @@ tiny-llm-medium = {n_layer=24, n_head=16, n_embd=1024} # 350M params
 tiny-llm-large = {n_layer=36, n_head=20, n_embd=1280} # 774M params
 tiny-llm-xl = {n_layer=48, n_head=25, n_embd=1600} # 1558M params
 
-[data]
-block_size = 128
-
 [trainer]
 device = "auto"          # "auto", "cuda", or "cpu"
 batch_size = 16
