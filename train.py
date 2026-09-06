@@ -66,6 +66,8 @@ folder.mkdir(parents=True, exist_ok=True)
 tokenizer = AutoTokenizer.from_pretrained('gpt2')
 tokenizer.model_max_length = int(1e30)  # override max-length to prevent seq length warning
 
+print(f'Vocabulary size: {len(tokenizer)}')
+
 dataset = FineWebDataset(
     data_dir=config['system']['data_dir'], 
     seq_len=config['context_size'],
