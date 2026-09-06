@@ -66,7 +66,7 @@ tokenizer.model_max_length = int(1e30)  # override max-length to prevent seq len
 
 dataset = FineWebDataset(
     data_dir=config['system']['data_dir'], 
-    seq_len=1024,
+    seq_len=config['context_size'],
     tokenizer=tokenizer
 )
     
