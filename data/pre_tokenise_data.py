@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pyarrow.parquet as pq
-from transformers import PreTrainedTokenizerFast
+from transformers.tokenization_utils_fast import PreTrainedTokenizerFast
 
 
 def parse_args() -> argparse.Namespace:
