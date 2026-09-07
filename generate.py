@@ -3,7 +3,7 @@ import time
 
 import torch
 
-from tinyLLM.model import GPT
+from tinyLLM.model import TinyLLM
 from tinyLLM.utils import load_config
 from tinyLLM.bpe import BPETokenizer
 
@@ -27,7 +27,7 @@ print(f'Running on device {device}')
 print(f'Using model {args.model}')
 print(f'Generating {args.steps} tokens in total')
 
-model = GPT(config).to(device)
+model = TinyLLM(config).to(device)
 model_dict = torch.load(f"checkpoints/{args.model}.pt", weights_only=True)
 model.load_state_dict(model_dict['model_state_dict'])
 model.eval()

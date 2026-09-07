@@ -121,7 +121,7 @@ class Block(nn.Module):
         return x
 
 
-class GPT(nn.Module):
+class TinyLLM(nn.Module):
     def __init__(self, config: dict):
         super().__init__()
         assert config['vocab_size'] is not None

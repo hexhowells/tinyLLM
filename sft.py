@@ -8,7 +8,7 @@ from transformers import AutoTokenizer
 
 import wandb
 
-from tinyLLM.model import GPT
+from tinyLLM.model import TinyLLM
 from tinyLLM.utils import set_seed, load_config
 from dataloader import SmolTalkDataset, sft_collate_fn
 
@@ -55,7 +55,7 @@ loader = DataLoader(
 # construct the model
 config['vocab_size'] = len(tokenizer)
 config['block_size'] = config['context_size']
-model = GPT(config).to(device)
+model = TinyLLM(config).to(device)
 
 model_dict = torch.load("checkpoints/gpt2.pt", weights_only=True)
 model.load_state_dict(model_dict['model_state_dict'])

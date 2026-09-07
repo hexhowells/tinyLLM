@@ -8,7 +8,7 @@ from transformers import AutoTokenizer
 
 import wandb
 
-from tinyLLM.model import GPT
+from tinyLLM.model import TinyLLM
 from tinyLLM.utils import set_seed, load_config
 from dataloader import FineWebDataset
 
@@ -85,7 +85,7 @@ loader = DataLoader(
 # construct the model
 config['vocab_size'] = len(tokenizer)
 config['block_size'] = config['context_size']
-model = GPT(config).to(device)
+model = TinyLLM(config).to(device)
 
 optimiser = model.configure_optimizers(config['trainer'])
 model = torch.compile(model) 
