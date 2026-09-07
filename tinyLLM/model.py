@@ -122,22 +122,6 @@ class Block(nn.Module):
 
 
 class GPT(nn.Module):
-    """
-    General pipeline
-    emb = dropout(token_emb + pos_emb)
-    emb = block(emb) for block in blocks
-    out = linear(RNSNorm(emb))
-
-    where block:
-        -> layer norm -> multi-head attention -> + -> layer norm -> MLP -> + -> output
-         ----------------------------------------^  -----------------------^
-
-    where MHA:
-        q, k, v = emb[head] for head in heads
-        q -> linear --> scale -> mask -> softmax --> matmul -> out
-        k -> linear -^                            |
-        v -> linear -------------------------------
-    """
     def __init__(self, config: dict):
         super().__init__()
         assert config['vocab_size'] is not None
