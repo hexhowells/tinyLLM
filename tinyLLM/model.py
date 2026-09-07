@@ -187,7 +187,6 @@ class GPT(nn.Module):
     
 
     def forward(self, idx, targets=None) -> tuple[torch.Tensor, torch.Tensor|None]:
-        device = idx.device
         _, t = idx.size()
         assert t <= self.context_size, f"Cannot forward sequence of length {t}, block size is only {self.context_size}"
 
