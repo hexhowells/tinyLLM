@@ -35,6 +35,15 @@ class CausalSelfAttention(nn.Module):
         
         self.n_head = config['n_head']
         self.n_embd = config['n_embd']
+        self.head_dim = config['n_embd'] // config['n_head']
+
+        self.q_ln = nn.RMSNorm(self.head_dim)
+        self.k_ln = nn.RMSNorm(self.head_dim)
+
+        # learnable temperature sclar per head, used for QK normalisation
+        self.attn_scale = nn.Parameter(
+            torch.full((1, self.n_head, 1, 1), 1.0 / math.sqrt(self.head_dim))
+        )
 
 
     def forward(self, x, cos, sin):
@@ -44,19 +53,32 @@ class CausalSelfAttention(nn.Module):
         q, k, v = self.c_attn(x).split(self.n_embd, dim=2)  # split on the embedding dim (B, T, n_embd)
 
         # split output embedding layer C into multiple heads
-        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, n_head, T, head_dim)
-        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, n_head, T, head_dim)
-        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, n_head, T, head_dim)
+        k = k.view(B, T, self.n_head, C // self.n_head)
+        q = q.view(B, T, self.n_head, C // self.n_head)
+        v = v.view(B, T, self.n_head, C // self.n_head)
+
+        # apply qk normalisation
+        q = self.q_ln(q)
+        k = self.k_ln(k)
+
+        # transpose for attention -> (B, n_head, T, head_dim)
+        q = q.transpose(1, 2)
+        k = k.transpose(1, 2)
+        v = v.transpose(1, 2)
 
         # apply RoPE to Q and K
         q, k = apply_rotary_pos_emb(q, k, cos, sin)
+
+        # apply learnable scale to Q
+        q = q * self.attn_scale
 
         # causal self-attention; Self-attend: (B, n_head, T, head_dim) x (B, n_head, head_dim, T) -> (B, n_head, T, T)
         y = F.scaled_dot_product_attention(
             q, k, v, 
             attn_mask=None, 
             dropout_p=self.attn_dropout.p if self.training else 0.0, 
-            is_causal=True
+            is_causal=True,
+            scale=1.0
         )
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
