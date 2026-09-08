@@ -2,28 +2,26 @@ import glob
 import torch
 from torch.utils.data import IterableDataset, Dataset
 import pyarrow.parquet as pq
+import numpy as np
 
 
 class FineWebDataset(IterableDataset):
     def __init__(
             self,
             data_dir: str,
-            tokenizer,
             seq_len: int = 1024
         ) -> None:
         super().__init__()
         self.data_dir = data_dir
         self.seq_len = seq_len
-
-        self.tokenizer = tokenizer
         
-        self.files = sorted(glob.glob(f"{data_dir}/**/*.parquet", recursive=True))
+        self.files = sorted(glob.glob(f"{data_dir}/**/*.npy", recursive=True))
         if not self.files:
-            raise FileNotFoundError(f"No .parquet shards found in {data_dir}")
+            raise FileNotFoundError(f"No .npy files found in {data_dir}")
 
 
     def _get_worker_shards(self) -> list:
-        """Splits Parquet shards across DDP ranks and DataLoader workers."""
+        """Splits numpy shards across DDP ranks and DataLoader workers."""
         worker_info = torch.utils.data.get_worker_info()
         
         if torch.distributed.is_initialized():  # used for multi-GPU setup
@@ -52,31 +50,28 @@ class FineWebDataset(IterableDataset):
 
     def __iter__(self):
         shards = self._get_worker_shards()
-        token_buffer = []
+        chunk_size = self.seq_len + 1
+        unused_tokens = None
 
         for shard_path in shards:
-            parquet_file = pq.ParquetFile(shard_path)
-            
-            for rg_idx in range(parquet_file.num_row_groups):
-                table = parquet_file.read_row_group(rg_idx, columns=["text"])
-                texts = table["text"].to_pylist()
+            tokens = np.load(shard_path)
+            tokens = torch.from_numpy(tokens).to(torch.long)
 
-                for text in texts:
-                    if not text.strip():
-                        continue
+            if unused_tokens is not None:
+                tokens = torch.cat([unused_tokens, tokens])
+                unused_tokens = None
 
-                    tokens = self.tokenizer.encode(text, add_special_tokens=False)
-                    tokens.append(self.tokenizer.eos_token_id)
-                    token_buffer.extend(tokens)
+            total_tokens = tokens.size(0)
 
-                    while len(token_buffer) >= self.seq_len + 1:
-                        chunk = token_buffer[:self.seq_len+1]
-                        token_buffer = token_buffer[self.seq_len:]
+            idx = 0
+            while idx + chunk_size <= total_tokens:
+                chunk = tokens[idx:idx+chunk_size]
+                yield chunk[:-1], chunk[1:]
 
-                        x = torch.tensor(chunk[:-1], dtype=torch.long)
-                        y = torch.tensor(chunk[1:], dtype=torch.long)
+                idx += self.seq_len
 
-                        yield x, y
+            if idx < total_tokens:
+                unused_tokens = tokens[idx:]
 
 
 class SmolTalkDataset(Dataset):
