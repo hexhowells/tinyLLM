@@ -2,6 +2,7 @@ model_type = 'tiny-llm'
 n_layer = 12
 n_head = 12
 n_embd =  768
+n_glu = 2048
 
 vocab_size = 0  # filled in dynamically based on tokeniser
 context_size = 2048
@@ -24,8 +25,8 @@ tiny-llm-xl = {n_layer=48, n_head=25, n_embd=1600} # 1558M params
 
 [trainer]
 device = "auto"          # "auto", "cuda", or "cpu"
-batch_size = 8
-accumulation_steps = 64  # 512 / batch_size
+batch_size = 12
+accumulation_steps = 43  # 512 / batch_size
 num_workers = 0
 learning_rate = 5e-4
 weight_decay = 0.1

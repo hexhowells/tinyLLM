@@ -91,16 +91,20 @@ class CausalSelfAttention(nn.Module):
 class MLP(nn.Module):
     def __init__(self, config: dict):
         super().__init__()
-        self.c_fc = nn.Linear(config['n_embd'], 4 * config['n_embd'])
+        # fused projection of signal and gate layers for GLU
+        self.glu_signal_gate = nn.Linear(config['n_embd'], config['n_glu'] * 2, bias=False)
         self.relu_sqrd = ReLUSquared()
-        self.c_proj = nn.Linear(4 * config['n_embd'], config['n_embd'])
+        self.glu_proj = nn.Linear(config['n_glu'], config['n_embd'], bias=False)
         self.dropout = nn.Dropout(config['resid_pdrop'])
 
     def forward(self, x):
-        x = self.c_fc(x)
-        x = self.relu_sqrd(x)
-        x = self.c_proj(x)
+        proj = self.glu_signal_gate(x)
+        gate, signal = proj.chunk(2, dim=-1)
+
+        x = signal * self.relu_sqrd(gate)
+        x = self.glu_proj(x)
         x = self.dropout(x)
+
         return x
 
 
