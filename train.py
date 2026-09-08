@@ -4,16 +4,15 @@ import torch
 from torch.utils.data import DataLoader
 from torch.nn.utils import clip_grad_norm_
 
-from transformers import AutoTokenizer
+from transformers import PreTrainedTokenizerFast
 
+import math
+import os
 import wandb
 
 from tinyLLM.model import TinyLLM
 from tinyLLM.utils import set_seed, load_config
 from dataloader import FineWebDataset
-
-import math
-import os
 
 
 # load config
@@ -63,15 +62,14 @@ def get_lr(global_step):
 folder = Path(config['system']['work_dir'])
 folder.mkdir(parents=True, exist_ok=True)
 
-tokenizer = AutoTokenizer.from_pretrained('gpt2')
+tokenizer = PreTrainedTokenizerFast.from_pretrained(config['tokeniser'])
 tokenizer.model_max_length = int(1e30)  # override max-length to prevent seq length warning
 
 print(f'Vocabulary size: {len(tokenizer)}')
 
 dataset = FineWebDataset(
     data_dir=config['system']['data_dir'], 
-    seq_len=config['context_size'],
-    tokenizer=tokenizer
+    seq_len=config['context_size']
 )
     
 loader = DataLoader(
