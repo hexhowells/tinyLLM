@@ -214,6 +214,8 @@ class TinyLLM(nn.Module):
                     decay.add(full_param_name)
                 elif param_name.endswith('weight') and isinstance(m, blacklist_weight_modules):
                     no_decay.add(full_param_name)
+                elif param_name.endswith('attn_scale'):
+                    no_decay.add(full_param_name)
 
         # validate that we considered every parameter
         param_dict = {pn: p for pn, p in self.named_parameters()}
