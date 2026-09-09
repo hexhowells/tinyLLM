@@ -159,7 +159,7 @@ for step, batch in enumerate(loader):
         global_step += 1
 
 # save final model
-raw_model = model._orig_mod if hasattr(model, "_orig_mod") else model
+raw_model = model._orig_mod if hasattr(model, "_orig_mod") else model  # need to unwrap nn.Module due to torch.compile
 torch.save({
     'global_step': global_step,
     'model_state_dict': raw_model.state_dict(),
