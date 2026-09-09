@@ -38,7 +38,7 @@ os.makedirs(config['system']['checkpoints'], exist_ok=True)
 # learning rate scheduler
 learning_rate = config['trainer']['learning_rate']
 min_lr = learning_rate / 10.0
-warmup_steps = 2000
+warmup_steps = 200
 lr_decay_steps = config['trainer'].get('max_iters', 100_000)
 
 def get_lr(global_step):
