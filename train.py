@@ -165,4 +165,4 @@ torch.save({
     'model_state_dict': raw_model.state_dict(),
     'optimizer_state_dict': optimiser.state_dict(),
     'config': config,
-}, "checkpoints/tinyllm.pt")
+}, "checkpoints/tinyllm-final.pt")
