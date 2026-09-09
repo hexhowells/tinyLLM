@@ -123,7 +123,6 @@ for step, batch in enumerate(loader):
         if global_step % sample_interval == 0 and global_step > 0:
             model.eval()
             with torch.no_grad():
-                print(f"\n--- Generating text at step {global_step} ---")
                 input_ids = tokenizer.encode(sample_prompt, return_tensors='pt').to(device)
                 
                 generated_ids = model.generate(
@@ -135,9 +134,6 @@ for step, batch in enumerate(loader):
                 )
                 
                 generated_text = tokenizer.decode(generated_ids[0].tolist(), skip_special_tokens=True)
-                print(f"Prompt: '{sample_prompt}'")
-                print(f"Output: {generated_text}\n")
-                
                 wandb.log({"generated_text": wandb.Html(generated_text)}, step=global_step)
                 
             model.train()
