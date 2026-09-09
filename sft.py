@@ -159,11 +159,11 @@ for epoch in range(config['sft']['epochs']):
 
             global_step += 1
 
-    # save final model
-    raw_model = model._orig_mod if hasattr(model, "_orig_mod") else model
-    torch.save({
-        'global_step': global_step,
-        'model_state_dict': raw_model.state_dict(),
-        'optimizer_state_dict': optimiser.state_dict(),
-        'config': config,
-    }, "checkpoints/sft_final.pt")
+# save final model
+raw_model = model._orig_mod if hasattr(model, "_orig_mod") else model
+torch.save({
+    'global_step': global_step,
+    'model_state_dict': raw_model.state_dict(),
+    'optimizer_state_dict': optimiser.state_dict(),
+    'config': config,
+}, "checkpoints/sft_final.pt")
