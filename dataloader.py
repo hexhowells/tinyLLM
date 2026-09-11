@@ -104,17 +104,6 @@ class SmolTalkDataset(Dataset):
         return len(self.conversations)
 
 
-    def _apply_chat_template(self, messages):
-        text = ""
-        for message in messages:
-            if message["role"] == "system": continue
-            text += f'<|{message["role"]}|>\n{message["content"]}\n'
-
-        text += '<|assistant|>\n'
-
-        return text
-
-
     def __getitem__(self, idx):
         messages = self.conversations[idx]
 
