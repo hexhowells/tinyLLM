@@ -36,7 +36,7 @@ max_iters = 9_500  # total_tokens / (global_batch_size * seq_len)
 
 [sft]
 learning_rate = 2e-5
-warmup_steps = 200
+warmup_steps = 20
 epochs = 2
 
 [system]

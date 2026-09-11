@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.nn.utils import clip_grad_norm_
 
-from transformers import AutoTokenizer
+from transformers import PreTrainedTokenizerFast
 
 import wandb
 
@@ -29,7 +29,7 @@ else:
 print(f'Running on device {device}')
 
 wandb.init(
-    project="tinygpt-sft",
+    project="tinyllm-sft",
     config=config,
 )
 
@@ -37,10 +37,10 @@ wandb.init(
 folder = Path(config['system']['work_dir'])
 folder.mkdir(parents=True, exist_ok=True)
 
-tokenizer = AutoTokenizer.from_pretrained('gpt2')
+tokenizer = PreTrainedTokenizerFast.from_pretrained(config['tokeniser'])
 tokenizer.model_max_length = int(1e30)  # override max-length to prevent seq length warning
 
-dataset = SmolTalkDataset('/media/datasets/smol-smoltalk/data', tokenizer)
+dataset = SmolTalkDataset('/media/datasets/smol-smoltalk/data', tokenizer, config['context_size'])
 
 loader = DataLoader(
         dataset,
@@ -57,7 +57,7 @@ config['vocab_size'] = len(tokenizer)
 config['block_size'] = config['context_size']
 model = TinyLLM(config).to(device)
 
-model_dict = torch.load("checkpoints/gpt2.pt", weights_only=True)
+model_dict = torch.load("checkpoints/tinyllm.pt", weights_only=True)
 model.load_state_dict(model_dict['model_state_dict'])
 
 optimiser = model.configure_optimizers(config['trainer'])
