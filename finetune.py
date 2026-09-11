@@ -67,9 +67,9 @@ accumulation_steps = config['trainer']['accumulation_steps']
 save_interval = 100
 sample_interval = 100
 sample_prompt = [
+    {"role": "system", "content": "You are a helpful AI assistant named tinyLLM."},
     {"role": "user", "content": "Why is the sky blue? Explain it to me like I am five years old."}
 ]
-
 
 # learning rate scheduler
 learning_rate = config['sft']['learning_rate']
@@ -128,14 +128,15 @@ for epoch in range(config['sft']['epochs']):
                 with torch.no_grad():
                     print(f"\n--- Generating text at step {global_step} ---")
                     
-                    input_ids = tokenizer.apply_chat_template(
+                    inputs = tokenizer.apply_chat_template(
                         sample_prompt, 
                         add_generation_prompt=True,
+                        return_dict=True,
                         return_tensors='pt'
                     ).to(device)
                     
                     generated_ids = model.generate(
-                        input_ids, 
+                        inputs['input_ids'], 
                         max_new_tokens=50, 
                         temperature=0.8, 
                         do_sample=True,
