@@ -8,9 +8,6 @@ from transformers import PreTrainedTokenizerFast
 from tinyLLM.model import TinyLLM
 from tinyLLM.utils import load_config
 
-# GPT2: Once upon a time there was a robot
-# GPT2+SFT: <|user|>\nCan you write a python function to check if a number is even or not.\n<|assistant|>\n
-
 parser = argparse.ArgumentParser(prog='TinyLLM', description='A tiny language model.')
 parser.add_argument('-m', '--model', type=str, default="gpt2")
 parser.add_argument('-p', '--prompt', type=str)
@@ -38,9 +35,6 @@ model.eval()
 
 def generate(prompt, steps, do_sample=True):
     x = tokenizer.encode(prompt, return_tensors='pt').to(device)
-    
-    # expand out the batch dim
-    #x = x.expand(1, -1)
 
     y = model.generate(x, max_new_tokens=steps, do_sample=do_sample, top_k=40)
     
