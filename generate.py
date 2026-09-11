@@ -3,9 +3,10 @@ import time
 
 import torch
 
+from transformers import PreTrainedTokenizerFast
+
 from tinyLLM.model import TinyLLM
 from tinyLLM.utils import load_config
-from tinyLLM.bpe import BPETokenizer
 
 # GPT2: Once upon a time there was a robot
 # GPT2+SFT: <|user|>\nCan you write a python function to check if a number is even or not.\n<|assistant|>\n
@@ -23,6 +24,9 @@ if config['trainer']['device'] == 'auto':
 else:
     device = config['trainer']['device']
 
+tokenizer = PreTrainedTokenizerFast.from_pretrained(config['tokeniser'])
+config['vocab_size'] = len(tokenizer)
+
 print(f'Running on device {device}')
 print(f'Using model {args.model}')
 print(f'Generating {args.steps} tokens in total')
@@ -33,13 +37,12 @@ model.load_state_dict(model_dict['model_state_dict'])
 model.eval()
 
 def generate(prompt, steps, do_sample=True):
-    tokenizer = BPETokenizer()
-    x = tokenizer(prompt)
+    x = tokenizer.encode(prompt, return_tensors='pt').to(device)
     
     # expand out the batch dim
-    x = x.expand(1, -1)
+    #x = x.expand(1, -1)
 
-    y = model.generate(x.to(device), max_new_tokens=steps, do_sample=do_sample, top_k=40)
+    y = model.generate(x, max_new_tokens=steps, do_sample=do_sample, top_k=40)
     
     response = tokenizer.decode(y[0].cpu().squeeze())
     end_of_text = response.find("<|endoftext|>")
