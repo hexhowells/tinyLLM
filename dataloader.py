@@ -118,22 +118,23 @@ class SmolTalkDataset(Dataset):
     def __getitem__(self, idx):
         messages = self.conversations[idx]
 
-        prompt = self._apply_chat_template(messages[:-1])
+        prompt_tokens = self.tokenizer.apply_chat_template(
+            messages[:-1], 
+            add_generation_prompt=True
+        )
 
-        answer = messages[-1]['content'] + self.tokenizer.eos_token
+        full_tokens = self.tokenizer.apply_chat_template(
+            messages,
+            add_generation_prompt=False
+        )
 
-        prompt_tokens = self.tokenizer.encode(prompt)
-        answer_tokens = self.tokenizer.encode(answer)
-
-        full_tokens = prompt_tokens + answer_tokens
-
-        if len(full_tokens) > self.seq_len+1:
-            full_tokens = full_tokens[:self.seq_len+1]
+        if len(full_tokens) > self.seq_len + 1:
+            full_tokens = full_tokens[:self.seq_len + 1]
 
         x = torch.tensor(full_tokens[:-1], dtype=torch.long)
         y = torch.tensor(full_tokens[1:], dtype=torch.long)
 
-        prompt_length = min(len(prompt_tokens)-1, len(y))
+        prompt_length = min(len(prompt_tokens) - 1, len(y))
         if prompt_length > 0:
             y[:prompt_length] = -1
 

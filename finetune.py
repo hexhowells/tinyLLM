@@ -66,7 +66,9 @@ accumulation_steps = config['trainer']['accumulation_steps']
 
 save_interval = 100
 sample_interval = 100
-sample_prompt = "<|user|>\nWhy is the sky blue? Explain it to me like I am five years old.\n<|assistant|>\n"
+sample_prompt = [
+    {"role": "user", "content": "Why is the sky blue? Explain it to me like I am five years old."}
+]
 
 
 # learning rate scheduler
@@ -121,11 +123,16 @@ for epoch in range(config['sft']['epochs']):
                 "global_step": global_step
             }, step=global_step)
 
-            if global_step % sample_interval == 0:# and global_step > 0:
+            if global_step % sample_interval == 0:
                 model.eval()
                 with torch.no_grad():
                     print(f"\n--- Generating text at step {global_step} ---")
-                    input_ids = tokenizer.encode(sample_prompt, return_tensors='pt').to(device)
+                    
+                    input_ids = tokenizer.apply_chat_template(
+                        sample_prompt, 
+                        add_generation_prompt=True,
+                        return_tensors='pt'
+                    ).to(device)
                     
                     generated_ids = model.generate(
                         input_ids, 
@@ -136,7 +143,7 @@ for epoch in range(config['sft']['epochs']):
                     )
                     
                     generated_text = tokenizer.decode(generated_ids[0].tolist(), skip_special_tokens=True)
-                    print(f"Prompt: '{sample_prompt}'")
+                    print(f"Prompt: '{sample_prompt[0]['content']}'")
                     print(f"Output: {generated_text}\n")
                     
                     wandb.log({"generated_text": wandb.Html(generated_text)}, step=global_step)
