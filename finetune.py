@@ -40,6 +40,16 @@ folder.mkdir(parents=True, exist_ok=True)
 tokenizer = PreTrainedTokenizerFast.from_pretrained(config['tokeniser'])
 tokenizer.model_max_length = int(1e30)  # override max-length to prevent seq length warning
 
+# remove system prompt from chat template - too many tokens
+tokenizer.chat_template = (
+    "{% for message in messages %}"
+    "{% if message['role'] != 'system' %}"
+    "{{ '<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n' }}"
+    "{% endif %}"
+    "{% endfor %}"
+    "{% if add_generation_prompt %}{{ '<|im_start|>assistant\\n' }}{% endif %}"
+)
+
 dataset = SmolTalkDataset('/media/datasets/smol-smoltalk/data', tokenizer, config['context_size'])
 
 loader = DataLoader(
@@ -67,7 +77,6 @@ accumulation_steps = config['trainer']['accumulation_steps']
 save_interval = 100
 sample_interval = 100
 sample_prompt = [
-    {"role": "system", "content": "You are a helpful AI assistant named tinyLLM."},
     {"role": "user", "content": "Why is the sky blue? Explain it to me like I am five years old."}
 ]
 
