@@ -247,7 +247,8 @@ class TinyLLM(nn.Module):
         max_new_tokens: int, 
         temperature: float = 1.0, 
         do_sample: bool = False, 
-        top_k: int|None = None
+        top_k: int|None = None,
+        eos_token_id: int|None = None,
     ) -> torch.Tensor:
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
@@ -286,5 +287,8 @@ class TinyLLM(nn.Module):
                 _, idx_next = torch.topk(probs, k=1, dim=-1)
 
             idx = torch.cat((idx, idx_next), dim=1)  # add token to sequence
+
+            if eos_token_id is not None and (idx_next == eos_token_id).all():
+                break
 
         return idx
