@@ -109,12 +109,14 @@ class SmolTalkDataset(Dataset):
 
         prompt_tokens = self.tokenizer.apply_chat_template(
             messages[:-1], 
-            add_generation_prompt=True
+            add_generation_prompt=True,
+            return_dict=False
         )
 
         full_tokens = self.tokenizer.apply_chat_template(
             messages,
-            add_generation_prompt=False
+            add_generation_prompt=False,
+            return_dict=False
         )
 
         if len(full_tokens) > self.seq_len + 1:
