@@ -38,6 +38,8 @@ max_iters = 9_500  # total_tokens / (global_batch_size * seq_len)
 learning_rate = 2e-5
 warmup_steps = 20
 epochs = 2
+batch_size = 8
+accumulation_steps = 64
 
 [system]
 checkpoints = "checkpoints/"

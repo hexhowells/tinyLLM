@@ -54,7 +54,7 @@ dataset = SmolTalkDataset('/media/datasets/smol-smoltalk/data', tokenizer, confi
 
 loader = DataLoader(
         dataset,
-        batch_size=config['trainer']['batch_size'],
+        batch_size=config['sft']['batch_size'],
         shuffle=True, 
         collate_fn=lambda b: sft_collate_fn(b, tokenizer.pad_token_id),
         num_workers=config['trainer']['num_workers'],
@@ -72,7 +72,7 @@ model.load_state_dict(model_dict['model_state_dict'])
 
 optimiser = model.configure_optimizers(config['trainer'])
 model = torch.compile(model) 
-accumulation_steps = config['trainer']['accumulation_steps']
+accumulation_steps = config['sft']['accumulation_steps']
 
 save_interval = 100
 sample_interval = 100
@@ -84,7 +84,7 @@ sample_prompt = [
 learning_rate = config['sft']['learning_rate']
 min_lr = learning_rate / 10.0
 warmup_steps = config['sft']['warmup_steps']
-steps_per_epoch = len(loader) // config['trainer']['accumulation_steps']
+steps_per_epoch = len(loader) // config['sft']['accumulation_steps']
 lr_decay_steps = steps_per_epoch * config['sft']['epochs']
 
 def get_lr(global_step):
