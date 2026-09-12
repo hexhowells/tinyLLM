@@ -2,6 +2,8 @@
 
 tinyLLM is a ~~large~~ tiny language model trained on a single 3090. The project is a continuation of the [tinyGPT](https://github.com/hexhowells/tinyGPT) project but updated to make the architecture more modern following recent developments of LLMs over the fast few years.
 
+The `train.py` script executes the main training run, using data downloaded and pre-tokenised from the `data/` scripts. The model can be instruction finetuned using `finetune.py`. Text can be generated from the pre-trained model using `generate.py` and you can converse with the instruct model using `chat.py` which runs a primitive cli chat interface.
+
 ## Architecture
 
 ![architecture diagram](https://github.com/hexhowells/tinyLLM/blob/main/tinyLLM.png)
