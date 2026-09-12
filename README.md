@@ -6,7 +6,7 @@ The `train.py` script executes the main training run, using data downloaded and 
 
 ## Architecture
 
-![architecture diagram](https://github.com/hexhowells/tinyLLM/blob/main/tinyLLM.png)
+![architecture diagram](https://github.com/hexhowells/tinyLLM/blob/main/assets/tinyLLM.png)
 
 ## Updates from tinyGPT
 tinyGPT was basically a straight implementation of GPT 2 (124M) but with some small improvements. 
