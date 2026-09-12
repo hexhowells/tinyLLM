@@ -1,7 +1,15 @@
 # tinyLLM
-tinyLLM is a continuation of the [tinyGPT](https://github.com/hexhowells/tinyGPT) project but with more modern architectural changes.
 
-tinyGPT was an implementation of GPT 2 (124M) with some small improvements. For this project, the following improvements are planned:
+tinyLLM is a ~~large~~ tiny language model trained on a single 3090. The project is a continuation of the [tinyGPT](https://github.com/hexhowells/tinyGPT) project but updated to make the architecture more modern following recent developments of LLMs over the fast few years.
+
+## Architecture
+
+![architecture diagram](https://github.com/hexhowells/tinyLLM/blob/main/tinyLLM.png)
+
+## Updates from tinyGPT
+tinyGPT was basically a straight implementation of GPT 2 (124M) but with some small improvements. 
+
+For this project, the following updates have been implemented:
 - [x] RoPE embedding
 - [x] RMSNorm
 - [x] Fineweb-edu (instead of Fineweb)
