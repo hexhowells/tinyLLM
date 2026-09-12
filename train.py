@@ -12,7 +12,7 @@ import wandb
 
 from tinyLLM.model import TinyLLM
 from tinyLLM.utils import set_seed, load_config
-from dataloader import FineWebDataset
+from tinyLLM.dataloader import FineWebDataset
 
 
 # load config

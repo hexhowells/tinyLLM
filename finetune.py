@@ -10,7 +10,7 @@ import wandb
 
 from tinyLLM.model import TinyLLM
 from tinyLLM.utils import set_seed, load_config
-from dataloader import SmolTalkDataset, sft_collate_fn
+from tinyLLM.dataloader import SmolTalkDataset, sft_collate_fn
 
 import math
 

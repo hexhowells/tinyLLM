@@ -6,7 +6,7 @@ Requires the old dataloader class to be copied into dataloader.py and renamed
 import time
 import torch
 from typing import Iterable
-from dataloader import FineWebDataset, FineWebDatasetOld
+from tinyLLM.dataloader import FineWebDataset, FineWebDatasetOld
 from transformers import AutoTokenizer
 
 
