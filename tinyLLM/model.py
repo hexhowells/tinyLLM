@@ -40,6 +40,9 @@ class CausalSelfAttention(nn.Module):
         self.q_ln = nn.RMSNorm(self.head_dim)
         self.k_ln = nn.RMSNorm(self.head_dim)
 
+        self.use_cache = False
+        self.kv_cache = None
+
         # learnable temperature sclar per head, used for QK normalisation
         self.attn_scale = nn.Parameter(
             torch.full((1, self.n_head, 1, 1), 1.0 / math.sqrt(self.head_dim))
@@ -69,15 +72,26 @@ class CausalSelfAttention(nn.Module):
         # apply RoPE to Q and K
         q, k = apply_rotary_pos_emb(q, k, cos, sin)
 
+        if self.use_cache:
+            if self.kv_cache is not None:
+                past_k, past_v = self.kv_cache
+                k = torch.cat((past_k, k), dim=-2)
+                v = torch.cat((past_v, v), dim=-2)
+            self.kv_cache = (k.detach(), v.detach())
+
         # apply learnable scale to Q
         q = q * self.attn_scale
+
+        # causal mask is only needed if sequence length > 1 (prefill)
+        # during single-token decoding, T=1, so no mask is applied
+        is_causal = T > 1
 
         # causal self-attention; Self-attend: (B, n_head, T, head_dim) x (B, n_head, head_dim, T) -> (B, n_head, T, T)
         y = F.scaled_dot_product_attention(
             q, k, v, 
             attn_mask=None, 
             dropout_p=self.attn_dropout.p if self.training else 0.0, 
-            is_causal=True,
+            is_causal=is_causal,
             scale=1.0
         )
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
@@ -174,14 +188,32 @@ class TinyLLM(nn.Module):
             torch.nn.init.ones_(module.weight)
     
 
+    def _set_kv_cache(self, enable: bool):
+        """toggles the stateful KV cache across all attention blocks"""
+        for block in self.transformer.h: # type: ignore
+            block.attn.use_cache = enable
+            if not enable:
+                block.attn.kv_cache = None
+
+
     def forward(self, idx, targets=None) -> tuple[torch.Tensor, torch.Tensor|None]:
         _, t = idx.size()
-        assert t <= self.context_size, f"Cannot forward sequence of length {t}, block size is only {self.context_size}"
+        
+        # detect if cache is active and populated to offset RoPE
+        past_length = 0
+        first_attn = self.transformer.h[0].attn # type: ignore
+        if first_attn.use_cache and first_attn.kv_cache is not None:
+            past_length = first_attn.kv_cache[0].size(-2)
+            
+        assert past_length + t <= self.context_size, f"Cannot forward sequence of length {past_length + t}, block size is only {self.context_size}"
 
         tok_emb = self.transformer.wte(idx)  # type: ignore
         x = self.transformer.drop(tok_emb)  # type: ignore
 
-        cos, sin = self.rope_cache(seq_len=t, dtype=tok_emb.dtype)
+        # slice global RoPE frequencies based on current position
+        cos_full, sin_full = self.rope_cache(seq_len=self.context_size, dtype=tok_emb.dtype)
+        cos = cos_full[:, :, past_length : past_length + t, :]
+        sin = sin_full[:, :, past_length : past_length + t, :]
         
         for block in self.transformer.h:  # type: ignore
             x = block(x, cos, sin)
@@ -265,10 +297,28 @@ class TinyLLM(nn.Module):
         Returns:
             tensor representing the input token indices and all the output tokens
         """
+        was_training = self.training
+        self.eval()
+        self._set_kv_cache(True)
+        
+
         for _ in range(max_new_tokens):
-            # if the sequence context is growing too long we must crop it at context_size
-            idx_cond = idx if idx.size(1) <= self.context_size else idx[:, -self.context_size:]
+            # if cache is populated, only pass the very last token (decode phase)
+            # otherwise pass the full sequence (prefill phase)
+            if self.transformer.h[0].attn.kv_cache is not None: # type: ignore
+                idx_cond = idx[:, -1:]
+            else:
+                idx_cond = idx if idx.size(1) <= self.context_size else idx[:, -self.context_size:]
             
+            # prevent context window overflow
+            if self.transformer.h[0].attn.kv_cache:  # type: ignore
+                current_len = self.transformer.h[0].attn.kv_cache[0].size(-2) + 1  # type: ignore
+            else:
+                current_len = idx.size(1)
+
+            if current_len > self.context_size:
+                break
+                
             logits, _ = self.forward(idx_cond)
             logits = logits[:, -1, :] / temperature  # scale logits by desired temperature
             
@@ -290,5 +340,9 @@ class TinyLLM(nn.Module):
 
             if eos_token_id is not None and (idx_next == eos_token_id).all():
                 break
+
+        if was_training:
+            self._set_kv_cache(False)
+            self.train()
 
         return idx
