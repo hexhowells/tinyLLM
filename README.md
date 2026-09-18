@@ -22,5 +22,5 @@ For this project, the following updates have been implemented:
 - [x] ReLU²
 - [x] Remove dropout layers for pre-training
 - [x] Implement gated linear units (GLU)
-- [ ] Larger model with more data (pre-training and fine-tuning)
+- [x] Larger model with more data (pre-training and fine-tuning)
 - [ ] Additional fine-tuning for increasing the context size
