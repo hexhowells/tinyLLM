@@ -1,0 +1,11 @@
+tinyllm-122m
+> HellaSwag Accuracy: 29.27%
+
+tinyllm-122m-instruct
+> HellaSwag Accuracy: 29.54%
+
+tinyllm-300m
+> HellaSwag Accuracy: 31.68%
+
+tinyllm-300m-instruct
+> HellaSwag Accuracy: 31.61%
