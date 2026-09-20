@@ -5,3 +5,4 @@ wandb/
 checkpoints/
 extra/
 *.drawio
+google-research/
